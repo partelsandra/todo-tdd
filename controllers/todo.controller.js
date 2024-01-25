@@ -5,12 +5,16 @@ const createTodo = async (req, res, next) => {
         const createdModel = await TodoModel.create(req.body);
         res.status(201).json(createdModel);
     } catch (error) {
-        next(error);
+        if (error.name === 'ValidationError') {
+            res.status(500).json({ message: error.message }); // Return 500 for validation error
+        } else {
+            next(error);
+        }
     }
 };
 
 const getTodos = async (req, res, next) => {
-    try { 
+    try {
         const allTodos = await TodoModel.find({});
         res.status(200).json(allTodos);
     } catch (error) {
@@ -18,7 +22,21 @@ const getTodos = async (req, res, next) => {
     }
 };
 
+const getTodoById = async (req, res, next) => {
+    try {
+        const todo = await TodoModel.findById(req.params.todoId);
+        if (todo) {
+            res.status(200).json(todo);
+        } else {
+            res.status(404).json({ message: 'Todo not found' }); // Return a 404 response when the item doesn't exist
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createTodo,
-    getTodos
+    getTodos,
+    getTodoById
 };
