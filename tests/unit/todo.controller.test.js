@@ -1,12 +1,11 @@
-const TodoController = require('../../controllers/todo.controller')
-const TodoModel = require('../../models/todo.model')
-const httpMocks = require('node-mocks-http')
-const newTodo = require('../mock-data/new-todo.json')
-const jest = require("jest");
+const TodoController = require('../../controllers/todo.controller');
+const TodoModel = require('../../models/todo.model');
+const httpMocks = require('node-mocks-http');
+const newTodo = require('../mock-data/new-todo.json');
 const allTodos = require("../mock-data/all-todos.json");
 
-TodoModel.create = jest.fn()
-TodoModel.find = jest.fn()
+TodoModel.create = jest.fn();
+TodoModel.find = jest.fn();
 TodoModel.findById = jest.fn();
 TodoModel.findByIdAndUpdate = jest.fn();
 TodoModel.findByIdAndDelete = jest.fn();
@@ -87,7 +86,7 @@ describe("TodoController.getTodos", () => {
     });
     it("should do error handling", async () => {
         const errorMessage = { message: "error finding todoModel" };
-        const rejectedPromise = Promise.reject(errorMEssage);
+        const rejectedPromise = Promise.reject(errorMessage); // Fix typo here
         TodoModel.findById.mockReturnValue(rejectedPromise);
         await TodoController.getTodoById(req, res, next);
         expect(next).toHaveBeenCalledWith(errorMessage);
@@ -146,7 +145,8 @@ describe("TodoController.deleteTodo", () => {
         expect(TodoModel.findByIdAndDelete).toBeCalledWith(todoId);
     });
     it("should return 200 OK and deleted todomodel", async () => {
-        TodoModel.findByIdAndDelete.deleteTodo(req, res, next);
+        TodoModel.findByIdAndDelete.mockReturnValue(newTodo); // Correct this line
+        await TodoController.deleteTodo(req, res, next);
         expect(res.statusCode).toBe(200);
         expect(res._getJSONData()).toStrictEqual(newTodo);
         expect(res._isEndCalled()).toBeTruthy();
@@ -159,9 +159,9 @@ describe("TodoController.deleteTodo", () => {
         expect(next).toHaveBeenCalledWith(errorMessage);
     });
     it("should handle 404", async () => {
-        TodoModel.findByIdAndDelete.mockReturnValue(null);
+        TodoModel.findByIdAndDelete.mockReturnValue(Promise.resolve(null));
         await TodoController.deleteTodo(req, res, next);
         expect(res.statusCode).toBe(404);
         expect(res._isEndCalled()).toBeTruthy();
     });
-})
+});
